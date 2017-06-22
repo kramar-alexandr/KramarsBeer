@@ -1,0 +1,129 @@
+SetLangMode(LangRussian,"RUS",0);
+
+
+global updating
+procedure ItemTurnoverRn(record RcVc RepSpec)
+BEGIN
+record INVc INr;
+record ItemHistVc IHr;
+boolean TrHs,testf,foundf;
+integer i,k;
+array val sum;
+array string 50 monthyear;
+record ItemStatusVc ISr;
+val thismonthfinqty,lastday,thismonthselnext,nextmonth;
+roundmode rnd;	
+val tempval;
+  	
+  	/*while(loopmain(IHr,1,true))begin
+			IHr.FIFODate = IHr.TransDate;
+			recordstore(IHr,true);
+		end;*/
+  	rnd.decimals = 0;
+		rnd.mode = kRoundingModeHalfUp;
+		
+		
+    StartReportNoHeaderJob("Оборот по товарам");
+    
+    startformat(15);
+    	outstring(0,0,"Товар",false);
+    	outstring(50,0,"Название",false);
+    	outstring(220,0,"Период",false);
+    	outstring(260,0,"Оборот",false);
+    	outstring(300,0,"Остаток",false);
+    	outstring(340,0,"Расч.Обор",false);
+		outstring(380,0,"Остаток мес.",false);
+    	outstring(410,0,"Докупить!",false);
+    endformat;
+   	
+   	INr.Name = "";
+   	while(loopkey("Name",INr,1,true))begin
+   		if(INr.ItemType==1)then begin
+				TrHs = true;
+				IHr.ArtCode = INr.Code;
+				IHr.TransDate = RepSpec.sStartDate;
+				foundf = false;
+				k=0;
+				while(loopkey("ArtCode",IHr,2,TrHs))begin
+					testf = true;
+					if(IHr.ArtCode!=INr.Code)then begin TrHs = false; testf = false; end;
+					if(IHr.TransDate<RepSpec.sStartDate or IHr.TransDate>RepSpec.sEndDate)then begin TrHs = false; testf = false; end;
+					
+					if(IHr.StockAffectf==0)then begin testf = false; end;
+					if(IHr.FileName!="IVVc" and IHr.FileName!="SHVc" and IHr.FileName!="RetVc")then begin testf = false; end;
+					
+					if(testf)then begin
+						foundf = true;
+						if(blank(monthyear[k]))then begin
+							monthyear[k] = getmonth(IHr.TransDate) & "/" & getyear(IHr.TransDate);
+							sum[k] = 0;
+						end;
+						if(monthyear[k]!=getmonth(IHr.TransDate) & "/" & getyear(IHr.TransDate))then begin
+							k=k+1;
+							monthyear[k] = getmonth(IHr.TransDate) & "/" & getyear(IHr.TransDate);
+							sum[k] = 0;
+							sum[k] = sum[k] - IHr.Qty;
+							lastday = getday(IHr.TransDate);
+							if(getyear(Currentdate)==getyear(IHr.TransDate) and getmonth(Currentdate)==getmonth(IHr.TransDate))then begin
+								if(lastday<getday(Currentdate))then begin
+									lastday = getday(Currentdate);
+								end;
+							end;
+							thismonthfinqty = sum[k] / lastday * 30;
+							if(thismonthfinqty>sum[k])then begin
+								thismonthselnext = thismonthfinqty - sum[k];
+							end else begin
+								thismonthselnext = 0;
+							end;
+						end else begin
+							sum[k] = sum[k] - IHr.Qty;
+							lastday = getday(IHr.TransDate);
+							if(getyear(Currentdate)==getyear(IHr.TransDate) and getmonth(Currentdate)==getmonth(IHr.TransDate))then begin
+								if(lastday<getday(Currentdate))then begin
+									lastday = getday(Currentdate);
+								end;
+							end else begin
+								lastday = 30;
+							end;
+							thismonthfinqty = sum[k] / lastday * 30;
+							if(thismonthfinqty>sum[k])then begin
+								thismonthselnext = thismonthfinqty - sum[k];
+							end else begin
+								thismonthselnext = 0;
+							end;
+						end;
+					end;
+				end;
+				resetloop(IHr);
+				
+				if(foundf)then begin
+					For(i=0;i<=k;i=i+1) begin
+	  				startformat(15);
+	  					outstring(0,"DblINVc",INr.Code,false);
+							outstring(50,0,INr.Name,false);
+							outstring(220,0,monthyear[i],false);
+							outstring(260,0,sum[i],false);
+							if(i==k)then begin
+								ISr.Code = INr.Code;
+								ISr.Location = ";;;";
+								readfirstmain(ISr,2,true);
+									outstring(300,0,ISr.Instock,false);
+									outstring(340,0,thismonthfinqty,false);
+									outstring(380,0,thismonthselnext,false);
+									if((ISr.Instock - thismonthselnext)<thismonthfinqty)then begin
+										outstring(410,0,round((thismonthfinqty - ISr.Instock + thismonthselnext) * 1.1,rnd),false);
+									end;
+							end;
+							
+	  				endformat;
+					end; 
+					monthyear[0] = "";
+					black_Divider(0,1);
+				end;
+				
+   		end;
+   	end;
+   	
+    EndJob;
+  RETURN;
+END;

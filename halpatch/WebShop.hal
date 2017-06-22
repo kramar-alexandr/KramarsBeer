@@ -1,0 +1,547 @@
+external function Boolean GetNextCustNr(var string);
+external function Boolean ORVc_PasteArtCode(var record ORVc,Integer,var string,var string,Boolean);
+
+SetLangMode(LangRussian,"RUS",0);
+
+global webpublic updating procedure WebGetPromOrdersCallBack()
+begin
+record PromUaBlock PUAb;
+area req,reply;
+xml repxml;
+integer orcnt,i,errorcnt,rwcnt,ordi,itemi,itemcnt;
+record CUVc CUr,lCUr;
+string 250 customer,phone,email,eandarea,tstr,addr0,addr1,addr2,addr3,state,inwarning,warning;
+boolean foundf,foundrec,saveflag;
+record ORVc ORr;
+row ORVc ORRw;
+val orsum;
+
+	blockload(PUAb);
+	webgetpostdata(reply);
+	
+	if(getarealength(reply)>0)then begin
+		logtext(0,PUAb.Path);
+		logtext(0,getarealength(reply));
+		writeareatofile(reply,"1.txt",0);
+		
+		eandarea = GetStringFromArea(reply,0,9);
+		logtext(0,eandarea);
+		
+		eandarea = GetStringFromArea(reply,getarealength(reply)-10,9);
+		logtext(0,eandarea);
+	
+		if(eandarea=="</orders>")then begin
+			if(getarealength(reply)>0)then begin
+				repxml = parsexmlarea(reply);
+				orcnt = XmlCountChildren(repxml,"orders");
+				For(ordi=orcnt-1;ordi>=0;ordi=ordi-1) begin
+					customer = "";
+					phone = "";
+					email = "";
+					addr0 = "";
+					addr1 = "";
+					addr2 = "";
+					
+					customer = XmlGet(repxml,"orders/order[" & ordi & "]/name");
+					phone = XmlGet(repxml,"orders/order[" & ordi & "]/phone");
+					email = XmlGet(repxml,"orders/order[" & ordi & "]/email");
+					addr0 = XmlGet(repxml,"orders/order[" & ordi & "]/address");
+					addr1 = XmlGet(repxml,"orders/order[" & ordi & "]/deliveryType");
+					addr2 = XmlGet(repxml,"orders/order[" & ordi & "]/paymentType");
+					
+					
+					foundf = false;
+					if(nonblank(phone))then begin
+						CUr.Phone = phone;
+						if(Readfirstkey("Phone",CUr,1,true))then begin
+							foundf = true;
+						end;
+					end;
+					if(foundf==false)then begin
+						if(nonblank(email))then begin
+							CUr.eMail = email;
+							if(Readfirstkey("eMail",CUr,1,true))then begin
+								foundf = true;
+							end;
+						end;
+					end;
+					if(foundf==false)then begin
+						recordnew(CUr);
+						if (GetNextCustNr(tstr)) then begin end;
+						CUr.Code = tstr;
+						lCUr.Code = CUr.Code;
+						if (!ReadFirstMain(lCUr,1,true)) then begin
+							CUr.Name = customer;
+							CUr.Phone = phone;
+							CUr.eMail = email;
+							CUr.CustCat = "NONAM";
+							CUr.CUType = 1;
+							CUr.PayDeal = "O";
+							CUr.InvAddr0 = addr0;
+							CUr.InvAddr1 = addr1;
+							CUr.InvAddr2 = addr2;
+							logtext(0,"Customer Store " & CUr.Code);
+							recordstore(CUr,false);
+							foundf = true;
+						end;
+					end;
+					
+					foundrec = false;
+					ORr.CustOrdNr = XmlGetAttribute(repxml,"orders/order[" & ordi & "]","id");
+					state = XmlGetAttribute(repxml,"orders/order[" & ordi & "]","state");
+					if(ReadFirstKey("CustOrdNr",ORr,1,true))then begin
+						foundrec = true;
+					end;
+					
+					if(foundf)then begin
+						if(foundrec==false)then begin
+							recordnew(ORr);
+							
+							ORr.SerNr = NextSerNr("ORVc",CurrentDate,-1,false,"");
+							ORr.CustOrdNr = XmlGetAttribute(repxml,"orders/order[" & ordi & "]","id");
+						end;
+						orsum = blankval;
+						ORr.Comment = state;
+						
+						saveflag = true;
+						ORr.Closed = 0;
+						switch(state)begin
+							case "new":	ORr.Comment = "Новый";
+							case "accepted":	ORr.Comment = "Принятый";
+							case "declined":	ORr.Comment = "Отмененный";ORr.Closed = 1;saveflag = false;
+							case "draft":	ORr.Comment = "Черновик";saveflag = false;
+							case "closed":	ORr.Comment = "Выполнен";ORr.OKFlag = 1;
+						end;
+						
+						if(!foundrec)then begin
+							if(saveflag)then begin
+								ORr.CustCode = CUr.Code;
+								ORr.OrdDate = stringtodate(left(XmlGet(repxml,"orders/order[" & ordi & "]/date"),8));
+								ORr.Addr0 = CUr.Name;
+								ORr.Addr1 = addr0;
+								ORr.Addr2 = addr1;
+								ORr.Addr3 = addr2;
+								ORr.ShipAddr0 = CUr.Name;
+								ORr.ShipAddr1 = addr0;
+								ORr.ShipAddr2 = addr1;
+								ORr.ShipAddr3 = addr2;
+								ORr.DelAddr3 = phone;
+								ORr.DelAddr4 = email;
+								ORr.CurncyCode = "UAH";
+								ORr.PayDeal = "5";
+						
+								itemcnt = 0;
+								if(foundrec==false)then begin
+									itemcnt = XmlCountChildren(repxml,"orders/order[" & ordi & "]/items");
+									For(itemi=0;itemi<itemcnt;itemi=itemi+1) begin
+										ORrw.ArtCode = XmlGet(repxml,"orders/order[" & ordi & "]/items/item[" & itemi & "]/sku");
+										matrowput(ORr,itemi,ORRw);
+										ORVc_PasteArtCode(ORr,itemi,inwarning,warning,false);
+										matrowget(ORr,itemi,ORRw);
+										if(blank(ORrw.ArtCode))then begin
+											ORrw.ArtCode = XmlGetAttribute(repxml,"orders/order[" & ordi & "]/items/item[" & itemi & "]","id");
+										end;
+										ORrw.Spec = XmlGet(repxml,"orders/order[" & ordi & "]/items/item[" & itemi & "]/name");
+										ORrw.Quant = stringtoval(XmlGet(repxml,"orders/order[" & ordi & "]/items/item[" & itemi & "]/quantity"),M4Val);
+										ORrw.Price = stringtoval(XmlGet(repxml,"orders/order[" & ordi & "]/items/item[" & itemi & "]/price"),M4Val);
+										ORrw.VATCode = "0%O";
+										ORrw.Sum = ORrw.Quant*ORrw.Price;
+										orsum = orsum + ORrw.Sum;
+										matrowput(ORr,itemi,ORRw);
+									end; 
+									ORr.Sum4 = orsum;
+								end;
+								recordstore(ORr,true);
+							end;
+						end else begin
+							if(saveflag)then begin
+								recordstore(ORr,true);
+							end;
+						end;
+					end;
+					
+				end; 
+			end;
+		end else begin
+			logtext(0,"Error get Orders");
+		end;		
+	end else begin
+		logtext(0,"WebGetPromOrdersCallBack ERROR");
+	end;
+
+return;
+end;
+
+
+global updating procedure GetPromOrdersMn()
+begin
+record PromUaBlock PUAb;
+area req,reply,a_req;
+xml repxml;
+integer orcnt,i,errorcnt,rwcnt,ordi,itemi,itemcnt;
+record CUVc CUr,lCUr;
+string 250 customer,phone,email,eandarea,tstr,addr0,addr1,addr2,addr3,state,inwarning,warning;
+boolean foundf,foundrec,saveflag;
+record ORVc ORr;
+row ORVc ORRw;
+val orsum;
+
+	blockload(PUAb);
+
+	AddTextToArea("{\"host\" : \"" & "my.prom.ua" & "\"," & chr(13),a_req);
+	AddTextToArea("\"port\" : " & 443 & "," & chr(13),a_req);
+	AddTextToArea("\"https\" : true," & chr(13),a_req);
+	AddTextToArea("\"page\" : \"" & PUAb.Path & "\"," & chr(13),a_req);
+	AddTextToArea("\"callbackhost\" : \"" & "127.0.0.1" & "\"," & chr(13),a_req);
+	AddTextToArea("\"callbackport\" : \"" & "1081" & "\"," & chr(13),a_req);
+	AddTextToArea("\"callbackpage\" : \"" & "/WebGetPromOrdersCallBack.hal" & "\"," & chr(13),a_req);
+	AddTextToArea("\"callbackgetdata\" : \"" & "?ordnum=" & 0 & "\"," & chr(13),a_req);
+	AddTextToArea("\"xmldata\" : \"",a_req);
+	AddTextToArea("\"}" & chr(13),a_req);
+	
+	if(SendWebRequest("127.0.0.1",1070,1070,false,"POST","/getProxyRequest","application/xml","",false,a_req,reply,20))then begin
+
+	end;
+
+return;
+end;
+
+function val GetStockedItemCost(string artcode,record INVc INr)
+begin
+	record ItemHistVc IHr;
+	boolean TrHs,testf;
+	val res,tempcost;
+	
+	TrHs = true;
+	IHr.ArtCode = artcode;
+	while(loopkey("ActiveQty",IHr,1,TrHs))begin
+		if(IHr.ArtCode!=artcode)then begin TrHs = false; end;
+		
+		if(TrHs)then begin
+			tempcost = 0;
+			tempcost = IHr.RemCostPrice / IHr.RemQty;
+			if(res < tempcost)then begin
+				res = tempcost;
+			end;
+		end;
+	end;
+	if(res < INr.LastPurchPrice)then begin
+		res = INr.LastPurchPrice;
+	end;
+	
+	GetStockedItemCost = res;
+return;
+end;
+
+function val GetStructuredItemCost(string artcode,record INVc INr)
+begin
+	record ItemHistVc IHr;
+	boolean TrHs,testf;
+	val res,tempcost;
+	record RecVc Recr;
+	row RecVc Recrw;
+	integer mtrw,i;
+	record INVc sINr;
+	
+	
+	Recr.Code = INr.Recepy;
+	if(readfirstmain(Recr,1,true))then begin
+		mtrw = matrowcnt(Recr);
+		For(i=0;i<mtrw;i=i+1) begin
+	  	matrowget(Recr,i,Recrw);
+	  	if(Recrw.InQty!=0)then begin
+				sINr.Code = Recrw.Item;
+				if(readfirstmain(sINr,1,true))then begin
+					res = res + GetStockedItemCost(Recrw.Item,sINr) * Recrw.InQty;
+	  		end;
+	  	end;
+		end; 
+	end;
+	
+	GetStructuredItemCost = res;
+return;
+end;
+
+
+function val GetItemCost(string artcode)
+begin
+val res;
+	record INVc INr;
+	record RecVc Recr;
+	row RecVc Recrw;
+	
+	INr.Code = artcode;
+	if(readfirstmain(INr,1,true))then begin
+		
+		switch(INr.ItemType)begin
+			case kItemTypeStocked: res = GetStockedItemCost(artcode,INr);
+			case kItemTypeStructured:res = GetStructuredItemCost(artcode,INr);
+			case kItemTypeService:res = 0;
+			case kItemTypePlain:res = 0;
+		end;
+		
+		
+	end else begin
+		logtext(0,"ERROR ItemNotFound " & artcode);
+	end;
+	
+	GetItemCost = res;
+
+return;
+end;
+
+global webpublic updating procedure WebGetPromItemsMnCallBack()
+begin
+	area req,reply;
+	xml repxml;
+	integer orcnt,i,errorcnt,rwcnt,ordi,itemi,itemcnt,k;
+	record CUVc CUr,lCUr;
+	string 250 customer,phone,email,eandarea,tstr,addr0,addr1,addr2,addr3,state,inwarning,warning,artcode;
+	boolean foundf,foundrec,saveflag;
+	record ORVc ORr;
+	row ORVc ORRw;
+	val orsum;
+	array string 50 artcodes;
+	vector boolean artcodefind;
+	vector integer artcodedubl;
+	val price,cost,gp,addprice;
+	record INVc INr;
+	
+	INr.Code = "";
+	while(loopmain(INr,1,true))begin
+		if(INr.PromExist>0)then begin
+			INr.PromExist = 0;
+			recordstore(INr,true);
+		end;
+	end;
+	webgetpostdata(reply);
+	logtext(0,"WebGetPromItemsMnCallBack");
+	writeareatofile(reply,"PromItems.txt",0);
+	if(getarealength(reply)>1000)then begin
+		eandarea = GetStringFromArea(reply,getarealength(reply)-15,14);
+		logtext(0,eandarea);
+		if(eandarea=="</yml_catalog>")then begin
+			repxml = parsexmlarea(reply);
+			itemcnt = XmlCountChildren(repxml,"yml_catalog/shop/offers");
+			For(i=0;i<itemcnt;i=i+1) begin
+	  		artcode = "";
+	  		artcode = XmlGet(repxml,"yml_catalog/shop/offers/offer[" & i & "]/vendorCode");
+	  		price =  stringtoval(XmlGet(repxml,"yml_catalog/shop/offers/offer[" & i & "]/price"),M4Val);
+	  		cost = GetItemCost(artcode);
+	  		
+	  		gp = (price-cost)/price*100;
+	  		addprice = (price-cost)/cost*100;
+	  		
+	  		//logtext(0,artcode & "  " & cost & "  " & price & "  " & gp & "% " & addprice & "%");
+	  		
+	  		
+	  		if(artcodefind[artcode]==false)then begin
+	  			artcodes[k] = artcode;
+	  			artcodefind[artcode]=true;
+	  			k = k +1;
+	  		end;
+	  		artcodedubl[artcode] = artcodedubl[artcode] + 1;
+	  		INr.Code = artcode;
+				if(readfirstmain(INr,1,true))then begin
+					INr.PromPrice = price;
+					INr.LastCost = cost;
+					INr.PromExist = 1;
+					recordstore(INr,true);
+				end;
+	  		
+			end; 
+			
+			For(i=0;i<k;i=i+1) begin
+	  		/*if(artcodedubl[artcodes[i]]>1)then begin
+	  			logtext(0,artcodes[i] & " dublicates " & artcodedubl[artcodes[i]]);
+	  		end;*/
+	  		INr.Code = artcodes[i];
+				if(readfirstmain(INr,1,true))then begin
+					INr.PromDubl = artcodedubl[artcodes[i]];
+					recordstore(INr,true);
+				end;
+	  		
+			end; 
+			
+			
+			
+		end;
+	end;
+	
+	GetPromOrdersMn;
+	
+return;
+end;
+
+global procedure PromItemReportRn(record RcVc RepSpec)
+begin
+	record INVc INr;
+	record ItemStatusVc ISr;
+	val instock;
+	
+	startreportnoheaderjob("Товары с Prom.ua");
+	
+	startformat(15);
+		OutString(0,0,"Дубликаты:",false);
+	endformat;
+	
+	startformat(15);
+		OutString(0,0,"Код",false);
+		OutString(70,0,"Название",false);
+		OutString(300,0,"Дубликат",true);
+	endformat;
+	
+	INr.Code = "";
+	while(loopmain(INr,1,true))begin
+		if(INr.PromDubl>1)then begin
+			startformat(15);
+				OutString(0,"DblINVc",INr.Code,false);
+				OutString(70,0,left(INr.Name,75),false);
+				OutString(300,0,INr.PromDubl,true);
+			endformat;
+		end;
+	end;
+	
+	black_divider(0,1);
+	startformat(15);
+		OutString(0,0,"Цены:",false);
+	endformat;
+	
+	startformat(15);
+		OutString(0,0,"Код",false);
+		OutString(70,0,"Название",false);
+		OutString(300,0,"Цена",true);
+		OutString(340,0,"Расч. себест.",true);
+		OutString(380,0,"Наценка %",true);
+		OutString(420,0,"Маржа %",true);
+		OutString(460,0,"Склад",true);
+	endformat;
+	
+	resetloop(INr);
+	INr.Name = "";
+	while(loopkey("Name",INr,1,true))begin
+		if(INr.PromExist>0)then begin
+			ISr.Code = INr.Code;
+			ISr.Location = ";;;";
+			instock = blankval;
+			readfirstmain(ISr,2,true);
+			instock = ISr.Instock;
+			
+			startformat(15);
+				OutString(0,"DblINVc",INr.Code,false);
+				OutString(70,0,left(INr.Name,75),false);
+				OutString(300,0,INr.PromPrice,true);
+				OutString(340,0,INr.LastCost,true);
+			
+				//gp = (price-cost)/price*100;
+				//addprice = (price-cost)/cost*100;
+			
+				OutString(380,0,(INr.PromPrice-INr.LastCost)/INr.LastCost*100,true);
+				OutString(420,0,(INr.PromPrice-INr.LastCost)/INr.PromPrice*100,true);
+				OutString(460,0,instock,true);
+			endformat;
+			if((INr.PromPrice-INr.LastCost)/INr.LastCost*100<25)then begin
+				black_divider(350,380);
+			end;
+			gray_divider(0,1);
+		end;
+	end;
+	
+	endjob;
+	
+return;
+end;
+
+
+global procedure DoBackupMn()
+begin
+	
+	record PromUaBlock PUAb;
+	area req,reply,a_req;
+	xml repxml;
+	integer orcnt,i,errorcnt,rwcnt,ordi,itemi,itemcnt;
+	record CUVc CUr,lCUr;
+	string 250 customer,phone,email,eandarea,tstr,addr0,addr1,addr2,addr3,state,inwarning,warning;
+	boolean foundf,foundrec,saveflag;
+	record ORVc ORr;
+	row ORVc ORRw;
+	val orsum;
+	string 50 backupfile,month,year,day;
+
+
+		blockload(PUAb);
+		
+		year = right(getyear(currentdate),2);
+		month = getmonth(currentdate);
+		if (len(month)==1) then begin
+			month = "0" & month;
+		end;
+		day = getday(currentdate);
+		if (len(day)==1) then begin
+			day = "0" & day;
+		end;
+	
+		backupfile = "TB" & year & month & day & ".TXT";
+		
+		AddTextToArea("{\"host\" : \"" & "176.36.252.49" & "\"," & chr(13),a_req);
+		AddTextToArea("\"port\" : " & 2121 & "," & chr(13),a_req);
+		AddTextToArea("\"folder\" : \"/usr/local/bin/KramarsBeer/Backup/\"," & chr(13),a_req);
+		AddTextToArea("\"filename\" : \"" & backupfile & "\"," & chr(13),a_req);
+		AddTextToArea("\"user\" : \"" & "FTPUSER" & "\"," & chr(13),a_req);
+		AddTextToArea("\"passwd\" : \"" & "Alex1985" & "\"," & chr(13),a_req);
+		AddTextToArea("\"backuppath\" : \"./Backup\"" & chr(13),a_req);
+		AddTextToArea("}" & chr(13),a_req);
+			
+		writeareatofile(a_req,"BackupRequest.txt",0);
+		
+		if(SendWebRequest("127.0.0.1",1070,1070,false,"POST","/copyFileToFTP","application/xml","",false,a_req,reply,20))then begin
+
+		end;
+	
+return;
+end;
+
+global updating procedure GetPromItemsMnRun()
+begin
+record PromUaBlock PUAb;
+area req,reply,a_req;
+xml repxml;
+integer orcnt,i,errorcnt,rwcnt,ordi,itemi,itemcnt;
+record CUVc CUr,lCUr;
+string 250 customer,phone,email,eandarea,tstr,addr0,addr1,addr2,addr3,state,inwarning,warning;
+boolean foundf,foundrec,saveflag;
+record ORVc ORr;
+row ORVc ORRw;
+val orsum;
+
+	blockload(PUAb);
+
+	AddTextToArea("{\"host\" : \"" & "brewcraft.com.ua" & "\"," & chr(13),a_req);
+	AddTextToArea("\"port\" : " & 80 & "," & chr(13),a_req);
+	AddTextToArea("\"https\" : false," & chr(13),a_req);
+	AddTextToArea("\"page\" : \"" & "/yandex_market.xml?html_description=0&hash_tag=6a8e540fc43bb57f6f41c4801affb8fa&yandex_cpa=&group_ids=&exclude_fields=description&sales_notes=&product_ids=" & "\"," & chr(13),a_req);
+	AddTextToArea("\"callbackhost\" : \"" & "127.0.0.1" & "\"," & chr(13),a_req);
+	AddTextToArea("\"callbackport\" : \"" & "1081" & "\"," & chr(13),a_req);
+	AddTextToArea("\"callbackpage\" : \"" & "/WebGetPromItemsMnCallBack.hal" & "\"," & chr(13),a_req);
+	AddTextToArea("\"callbackgetdata\" : \"" & "?ordnum=" & 0 & "\"," & chr(13),a_req);
+	AddTextToArea("\"xmldata\" : \"",a_req);
+	AddTextToArea("\"}" & chr(13),a_req);
+	
+	if(SendWebRequest("127.0.0.1",1070,1070,false,"POST","/getProxyRequest","application/xml","",false,a_req,reply,20))then begin
+	end;
+
+return;
+end;
+
+global updating procedure GetPromItemsMn()
+begin
+	
+	if(gethour(currenttime)==3 and getminute(currenttime)==1)then begin
+		DoBackupMn;
+	end;
+	if(right(getminute(currenttime),1)=="5" or right(getminute(currenttime),1)=="0")then begin
+		GetPromItemsMnRun;
+	end;
+	
+return;
+end;

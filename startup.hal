@@ -1,0 +1,31 @@
+
+event startup
+begin
+  SetLangMode(LangRussian,"RUS",0);
+  
+  Report("HAL Primitives",HalSpecRClass,HalSpecRn,0,modSY);
+  Setting("Перепечатать чек",ReprintingFiscalReceiptTClass,modPOS);
+  Setting("Печать на фискальном принтере",FiscalPrintingTClass,modPOS);
+  Setting("Локальные настройки фискального принтера",FiscalSetLocalTClass,modPOS);
+  Setting("Настройки Prom.ua",PromUaTClass,modSO);
+  
+  Import("Импортировать товары",INImportFromFMFormatIClass,INImportFromFMFormatIn,modIN);
+  Maintenance("Удалить все записи",CustomRegisterRemoveVClass,CustomRegisterRemoveMn,modDBMain);
+  
+  Maintenance("Загрузить заказы Prom.ua",GetPromOrdersVClass,GetPromOrdersMn,modSO);
+  Maintenance("Загрузить цены Prom.ua",GetPromOrdersVClass,GetPromItemsMn,modSO);
+  Maintenance("Пересчитать профит",GetPromOrdersVClass,RecalcIVProfitMn,modSL);
+  Maintenance("Отправить бэкап на сервер",GetPromOrdersVClass,DoBackupMn,modSY);
+	
+	Report("Товары с Prom.ua",PromItemReportRClass,PromItemReportRn,0,modSO);
+	Report("Товары с Prom.ua",PromItemReportRClass,PromItemReportRn,0,modSL);
+	Report("Оборот по товару",ItemTurnoverRClass,ItemTurnoverRn,0,modSL);
+	
+  SString(50000,"Укажите цену закупки");
+  SString(50001,"Укажите себестоимость");
+  SString(50002,"Укажите розничную цену");
+  SString(50003,"Указанная, в настройках фискального принтера, папка недоступна");
+  SString(50004,"Фискальный чек не будет напечатан для текущей счет-фактуры");
+  SString(50006,"Укажите тип контакта: клиент или поставщик");
+	return;
+end;

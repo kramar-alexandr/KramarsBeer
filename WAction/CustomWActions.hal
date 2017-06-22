@@ -1,0 +1,14 @@
+global
+updating function Boolean OnLogin()
+begin
+record RcVc RepSpec;
+boolean res;
+	res = inner.OnLogin;
+	
+	RepSpec.repname = "PromItemReportRn";
+	RepSpec.Media = mtScreen;
+	runreport(RepSpec,0);
+	
+	OnLogin = res;
+return;
+end;
