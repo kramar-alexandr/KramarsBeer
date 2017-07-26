@@ -161,7 +161,7 @@ begin
 			
 				if(TrHs)then begin
 					logtext(0,IHr.SerNr);
-					sum[INr.Code & ";" & getyear(IHr.TransDate) & ";" & getmonth(IHr.TransDate)] = sum[] - IHr.Qty;
+					sum[INr.Code & ";" & getyear(IHr.TransDate) & ";" & getmonth(IHr.TransDate)] = sum[INr.Code & ";" & getyear(IHr.TransDate) & ";" & getmonth(IHr.TransDate)] - IHr.Qty;
 				end;
 			end;
 			resetloop(IHr);
