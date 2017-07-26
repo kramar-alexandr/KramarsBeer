@@ -127,3 +127,49 @@ val tempval;
     EndJob;
   RETURN;
 END;
+
+
+global webpublic procedure WebGetItemStatistic()
+begin
+	record INVc INr;
+	record ItemHistVc IHr;
+	boolean TrHs,testf;
+	integer cnt,i,y,m;
+	vector val sum;
+	
+	WEBSETCONTENTTYPE("application/xml");
+
+	
+	weboutstring("" & chr(9));
+	For(y=2016;y<getyear(currentdate)+1;y=y+1) begin
+		For(m=1;m<13;m=m+m) begin
+			weboutstring(y & "/" & m & chr(9));
+		end; 
+	end; 
+	weboutstring(chr(13) & chr(10));
+	while(loopmain(INr,1,true))begin
+		TrHs = true;
+		IHr.ArtCode = INr.Code;
+		IHr.FileName = "IVVc";
+		ClearVector(sum);
+		if(INr.ItemType==1)then begin
+			while(loopkey("FNTransNr",IHr,2,TrHs))begin
+				if(IHr.ArtCode!=INr.Code)then begin TrHs = false; end;
+				if(IHr.FileName!="IVVc")then begin TrHs = false; end;
+			
+				if(TrHs)then begin
+					sum[INr.Code & ";" & getyear(IHr.TransDate) & ";" & getmonth(IHr.TransDate)] = sum[] - IHr.Qty;
+				end;
+			end;
+			weboutstring(INr.Code & chr(9));
+			For(y=2016;y<getyear(currentdate)+1;y=y+1) begin
+				For(m=1;m<13;m=m+m) begin
+					weboutstring(sum[INr.Code & ";" & y & ";" & m & chr(9));
+				end; 
+			end; 
+			weboutstring(chr(13) & chr(10));
+		end;
+	end;
+
+return;
+end;
