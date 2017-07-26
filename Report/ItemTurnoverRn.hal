@@ -160,6 +160,7 @@ begin
 				if(IHr.FileName!="IVVc")then begin TrHs = false; end;
 			
 				if(TrHs)then begin
+					logtext(0,IHr.SerNr);
 					sum[INr.Code & ";" & getyear(IHr.TransDate) & ";" & getmonth(IHr.TransDate)] = sum[] - IHr.Qty;
 				end;
 			end;
