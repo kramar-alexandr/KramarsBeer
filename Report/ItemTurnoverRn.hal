@@ -139,7 +139,7 @@ begin
 	
 	WEBSETCONTENTTYPE("application/xml");
 
-	
+	setcompany(2,false);
 	weboutstring("" & chr(9));
 	For(y=2016;y<getyear(currentdate)+1;y=y+1) begin
 		For(m=1;m<13;m=m+m) begin
@@ -170,6 +170,7 @@ begin
 			weboutstring(chr(13) & chr(10));
 		end;
 	end;
+	resetcompany(1);
 
 return;
 end;
