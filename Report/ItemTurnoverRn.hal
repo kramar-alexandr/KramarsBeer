@@ -161,6 +161,7 @@ begin
 					sum[INr.Code & ";" & getyear(IHr.TransDate) & ";" & getmonth(IHr.TransDate)] = sum[] - IHr.Qty;
 				end;
 			end;
+			resetloop(IHr);
 			weboutstring(INr.Code & chr(9));
 			For(y=2016;y<getyear(currentdate)+1;y=y+1) begin
 				For(m=1;m<13;m=m+m) begin
