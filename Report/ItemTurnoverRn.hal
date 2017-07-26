@@ -160,6 +160,7 @@ begin
 			
 				if(TrHs)then begin
 					sum[INr.Code & ";" & getyear(IHr.TransDate) & ";" & getmonth(IHr.TransDate)] = sum[INr.Code & ";" & getyear(IHr.TransDate) & ";" & getmonth(IHr.TransDate)] - IHr.Qty;
+					logtext(0,"SUM to " & INr.Code & ";" & getyear(IHr.TransDate) & ";" & getmonth(IHr.TransDate));
 				end;
 			end;
 			resetloop(IHr);
@@ -168,6 +169,7 @@ begin
 			For(y=2016;y<getyear(currentdate)+1;y=y+1) begin
 				For(m=1;m<13;m=m+m) begin
 					weboutstring(sum[INr.Code & ";" & y & ";" & m] & chr(9));
+					logtext(0,"SUM fr " & INr.Code & ";" & y & ";" & m] & chr(9));
 				end; 
 			end; 
 			weboutstring(chr(13) & chr(10));
