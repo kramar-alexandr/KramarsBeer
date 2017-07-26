@@ -137,7 +137,7 @@ begin
 	integer cnt,i,y,m;
 	vector val sum;
 	
-	WEBSETCONTENTTYPE("application/xml");
+	WEBSETCONTENTTYPE("application/text");
 
 	logtext(0,"WebGetItemStatistic");
 	setcompany(2,false);
