@@ -151,12 +151,12 @@ begin
 	while(loopmain(INr,1,true))begin
 		TrHs = true;
 		IHr.ArtCode = INr.Code;
-		IHr.FileName = "IVVc";
+		IHr.FileName = "SHVc";
 		ClearVector(sum);
 		if(INr.ItemType==1)then begin
-			while(loopkey("FNTransNr",IHr,2,TrHs))begin
+			while(loopkey("FNArtCode",IHr,2,TrHs))begin
 				if(IHr.ArtCode!=INr.Code)then begin TrHs = false; end;
-				if(IHr.FileName!="IVVc")then begin TrHs = false; end;
+				if(IHr.FileName!="SHVc")then begin TrHs = false; end;
 			
 				if(TrHs)then begin
 					sum[INr.Code & ";" & getyear(IHr.TransDate) & ";" & getmonth(IHr.TransDate)] = sum[INr.Code & ";" & getyear(IHr.TransDate) & ";" & getmonth(IHr.TransDate)] - IHr.Qty;
@@ -167,7 +167,7 @@ begin
 			weboutstring(INr.Code & chr(9));
 			weboutstring(INr.Name & chr(9));
 			For(y=2016;y<getyear(currentdate)+1;y=y+1) begin
-				For(m=1;m<13;m=m+m) begin
+				For(m=1;m<13;m=m+1) begin
 					weboutstring(sum[INr.Code & ";" & y & ";" & m] & chr(9));
 					logtext(0,"SUM fr " & INr.Code & ";" & y & ";" & m & chr(9));
 				end; 
