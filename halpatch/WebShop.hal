@@ -15,7 +15,8 @@ boolean foundf,foundrec,saveflag;
 record ORVc ORr;
 row ORVc ORRw;
 val orsum;
-
+	
+	setcompany(2,false);
 	blockload(PUAb);
 	webgetpostdata(reply);
 	
@@ -168,7 +169,9 @@ val orsum;
 	end else begin
 		logtext(0,"WebGetPromOrdersCallBack ERROR");
 	end;
-
+	
+	resetcompany(1);
+	
 return;
 end;
 
@@ -307,6 +310,8 @@ begin
 	val price,cost,gp,addprice;
 	record INVc INr;
 	
+	setcompany(2,false);
+	
 	INr.Code = "";
 	while(loopmain(INr,1,true))begin
 		if(INr.PromExist>0)then begin
@@ -369,6 +374,7 @@ begin
 	end;
 	
 	GetPromOrdersMn;
+	resetcompany(1);
 	
 return;
 end;
