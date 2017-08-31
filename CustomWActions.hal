@@ -5,9 +5,11 @@ record RcVc RepSpec;
 boolean res;
 	res = inner.OnLogin;
 	
-	RepSpec.repname = "PromItemReportRn";
-	RepSpec.Media = mtScreen;
-	runreport(RepSpec,0);
+	if(currentcompany==2)then begin
+		RepSpec.repname = "PromItemReportRn";
+		RepSpec.Media = mtScreen;
+		runreport(RepSpec,0);
+	end;
 	
 	OnLogin = res;
 return;
