@@ -194,6 +194,7 @@ val orsum;
 	AddTextToArea("{\"host\" : \"" & "my.prom.ua" & "\"," & chr(13),a_req);
 	AddTextToArea("\"port\" : " & 443 & "," & chr(13),a_req);
 	AddTextToArea("\"https\" : true," & chr(13),a_req);
+	AddTextToArea("\"method\" : GET," & chr(13),a_req);
 	AddTextToArea("\"page\" : \"" & PUAb.Path & "\"," & chr(13),a_req);
 	AddTextToArea("\"callbackhost\" : \"" & "127.0.0.1" & "\"," & chr(13),a_req);
 	AddTextToArea("\"callbackport\" : \"" & "1081" & "\"," & chr(13),a_req);
