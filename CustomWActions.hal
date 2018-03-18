@@ -5,7 +5,8 @@ record RcVc RepSpec;
 boolean res;
 	res = inner.OnLogin;
 	
-	if(currentcompany==2)then begin
+	if(currentcompany==2 and (GuiType==kGuiCocoa or GuiType==kGuiWindowsDesktop))then begin
+	
 		RepSpec.repname = "PromItemReportRn";
 		RepSpec.Media = mtScreen;
 		runreport(RepSpec,0);

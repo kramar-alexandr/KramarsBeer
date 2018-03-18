@@ -490,7 +490,7 @@ begin
 	
 		backupfile = "TB" & year & month & day & ".TXT";
 		
-		AddTextToArea("{\"host\" : \"" & "176.36.252.49" & "\"," & chr(13),a_req);
+		AddTextToArea("{\"host\" : \"" & "176.36.252.48" & "\"," & chr(13),a_req);
 		AddTextToArea("\"port\" : " & 2121 & "," & chr(13),a_req);
 		AddTextToArea("\"folder\" : \"/usr/local/bin/KramarsBeer/Backup/\"," & chr(13),a_req);
 		AddTextToArea("\"filename\" : \"" & backupfile & "\"," & chr(13),a_req);
