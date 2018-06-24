@@ -4,8 +4,6 @@ remote function Boolean ReadPOSButtons(string,string,longint,var string,var stri
 external procedure DisplayRecordDetails_RUS(LongInt,LongInt,string,date,time,string,string,string,string,string,string,string,string,string,string,string,Integer,string,string,string,val,string,Boolean,string,string);
 external procedure DrawPOSInterface_RUS(string,string,record POSButtonsVc,Integer,string,Integer);
 remote procedure CntPOSCurrencies(var Array string,var Array Boolean,var Integer);
-external function string 255 VATZoneNameRUS();
-external function string 255 VATZoneEditFieldLabelRUS(Integer);
 external function Boolean HasMultiLocations();
 external function Boolean HasCharts();
 external function Boolean HasAdvancedAccounting();
@@ -15,7 +13,6 @@ external function Boolean HasLanguages();
 external function Boolean HasItemGroups();
 external function Boolean HasAdvancedPricing();
 external function Boolean HasApprovals();
-external function real VATZoneButtonsLabelsRUS(real,real,real,real);
 external function Boolean HasVATZone();
 external function Boolean IsSessionOpen(string,string,Date,Time);
 external function Boolean HasJewelleryInterface();
@@ -486,7 +483,7 @@ begin
   v = 6;
   vm = v;
   EditField(h,vm,55,"Счёт реализации",Normal,SalesAcc,false,AccSClass);
-  EditField(h,v+=vs,55,VATZoneNameRUS & "Счёт реализации, ",Normal,EUSalesAcc,false,AccSClass);
+  EditField(h,v+=vs,55,"Счёт реализации, ",Normal,EUSalesAcc,false,AccSClass);
   EditField(h,v+=vs,55,"Сч/реал., эксп.",Normal,ExpSalesAcc,false,AccSClass);
   if (StandardHansa==false) then begin
     EditField(h,v+=vs,55,"Серв. фактур. сч/реал.",Normal,SVOInvbleSalesAcc,false,AccSClass);
@@ -498,7 +495,7 @@ begin
   EditField(h,v+=vs,55,"Счёт исп-ния мат. проекта",Normal,ProjMaterialsUsageAcc,false,AccSClass);
 
   EditField(h2=360,v=vm,55,"Внутр. счет стоим.",Normal,CostAcc,false,AccSClass);
-  EditField(h2,v+=vs,55,VATZoneNameRUS & "Счёт стоимости",Normal,EUCostAcc,false,AccSClass);
+  EditField(h2,v+=vs,55,"Счёт стоимости",Normal,EUCostAcc,false,AccSClass);
   EditField(h2,v+=vs,55,"Счёт затрат, эксп.",Normal,ExpCostAcc,false,AccSClass);
   if (StandardHansa==false) then begin
     EditField(h2,v+=vs,55,"Серв. фактур. сч/затр.",Normal,SVOInvbleCostAcc,false,AccSClass);
@@ -508,13 +505,13 @@ begin
     EditField(h2,v+=vs,55,"Отель - врем. сч.",Normal,HotelWIPAcc,false,AccSClass);
   end;
   EditField(h2=530,v=vm,20,"Код НДС",Normal,VATCode,false,VATCodeSClass);
-  EditField(h2,v+=vs,20,VATZoneEditFieldLabelRUS(1) & "Код НДС",Normal,VATCodeEU,false,VATCodeSClass); 
+  EditField(h2,v+=vs,20,"Код НДС",Normal,VATCodeEU,false,VATCodeSClass); 
   EditField(h2,v+=vs,20,"Код НДС, эксп.",Normal,VATCodeExp,false,VATCodeSClass);
   CheckBox(h2,v+=20,0,"Вычислять налоговые сборы",Perceptions);
   if (StandardHansa==false) then begin
     CheckBox(h2,v+=16,0,"Вычислять удерживаемые налоги",Withholdings);
     EditField(h2=670,v=vm,50,"Ш-н расч. нал",Normal,TaxTemplateCode,false,TaxTemplateSClass);
-    EditField(h2,v+=vs,50,VATZoneEditFieldLabelRUS(1) & "Нал. Шабл.",Normal,TaxTemplateCodeEU,false,TaxTemplateSClass); 
+    EditField(h2,v+=vs,50,"Нал. Шабл.",Normal,TaxTemplateCodeEU,false,TaxTemplateSClass); 
     EditField(h2,v+=vs,50,"Экс. ш-н расч. нал",Normal,TaxTemplateCodeExp,false,TaxTemplateSClass);
   end;
   if (GuiType==kGuiiPhone or GuiType==kGuiAndroid) then begin
@@ -1002,21 +999,6 @@ begin
     width = 135;
   end;
   EditField(h5,v,width,"Банк",Normal,BankCode,false,BankSClass);
-  if (HasApprovals) then begin
-    SoftEditField(h3=h+4,v=(vm+=40),123,"Статус утверждения",ViewOnly,"AcceptanceStatusFlag",false,0,M4Str,255);
-/*  
-    ButtonFrame(h3=h+4,v=(vm+=40),123,6,"Статус утверждения");
-    RadioButton(h3,v,kAcceptanceStateNotRequired,0,"не обязательно",AcceptanceStatus);
-    RadioButton(h3,v+=16,kAcceptanceStateNotStarted,0,"не начато",AcceptanceStatus);
-    RadioButton(h3,v+=16,kAcceptanceStateNotRequested,0,"не запрошено",AcceptanceStatus);
-    RadioButton(h3,v+=16,kAcceptanceStatePending,0,"в ожидании",AcceptanceStatus);
-    RadioButton(h3,v+=16,kAcceptanceStateApproved,0,"утверждено",AcceptanceStatus);
-    RadioButton(h3,v+=16,kAcceptanceStateRejected,0,"отклонено",AcceptanceStatus);
-*/    
-    v = VATZoneButtonsLabelsrus(h3=290,v=vm,170,16);
-  end else begin
-    v = VATZoneButtonsLabelsrus(h3=290,v=vm+20,170,16);
-  end;
   EditField(h2=-170,v=vm,150,"Регион",Normal,Region,false,RegionSClass);
   EditField(h2,v+=vs,150,"ИНН",Normal,VATNr,false,0);
   EditField(h2,v+=vs,150,"GLN",ViewOnly,RecipientGLN,false,0);  
