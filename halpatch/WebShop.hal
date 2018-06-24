@@ -459,6 +459,40 @@ begin
 return;
 end;
 
+global procedure DoBackupHANSAMn()
+begin
+	record PromUaBlock PUAb;
+	area req,reply,a_req;
+	xml repxml;
+	integer orcnt,i,errorcnt,rwcnt,ordi,itemi,itemcnt;
+	record CUVc CUr,lCUr;
+	string 250 customer,phone,email,eandarea,tstr,addr0,addr1,addr2,addr3,state,inwarning,warning;
+	boolean foundf,foundrec,saveflag;
+	record ORVc ORr;
+	row ORVc ORRw;
+	val orsum;
+	string 50 backupfile,month,year,day;
+	
+	
+	backupfile = "HANSA.HDB.COPY";
+	
+		AddTextToArea("{\"host\" : \"" & "176.36.252.48" & "\"," & chr(13),a_req);
+		AddTextToArea("\"port\" : " & 2121 & "," & chr(13),a_req);
+		AddTextToArea("\"protocol\" : \"FTP\"," & chr(13),a_req);
+		AddTextToArea("\"folder\" : \"/usr/local/bin/KramarsBeer/\"," & chr(13),a_req);
+		AddTextToArea("\"filename\" : \"" & backupfile & "\"," & chr(13),a_req);
+		AddTextToArea("\"user\" : \"" & "FTPUSER" & "\"," & chr(13),a_req);
+		AddTextToArea("\"passwd\" : \"" & "Alex1985" & "\"," & chr(13),a_req);
+		AddTextToArea("\"backuppath\" : \"./Backup\"" & chr(13),a_req);
+		AddTextToArea("}" & chr(13),a_req);
+			
+		writeareatofile(a_req,"BackupRequest.txt",0);
+		
+		if(SendWebRequest("127.0.0.1",1070,1070,false,"POST","/copyFileToFTP","application/xml","",false,a_req,reply,20))then begin
+
+		end;
+return;
+end;
 
 global procedure DoBackupMn()
 begin
@@ -492,6 +526,7 @@ begin
 		
 		AddTextToArea("{\"host\" : \"" & "176.36.252.48" & "\"," & chr(13),a_req);
 		AddTextToArea("\"port\" : " & 2121 & "," & chr(13),a_req);
+		AddTextToArea("\"protocol\" : \"FTP\"," & chr(13),a_req);
 		AddTextToArea("\"folder\" : \"/usr/local/bin/KramarsBeer/Backup/\"," & chr(13),a_req);
 		AddTextToArea("\"filename\" : \"" & backupfile & "\"," & chr(13),a_req);
 		AddTextToArea("\"user\" : \"" & "FTPUSER" & "\"," & chr(13),a_req);
@@ -547,6 +582,11 @@ begin
 	if(gethour(currenttime)==3 and getminute(currenttime)==1)then begin
 		DoBackupMn;
 	end;
+	
+	if(getminute(currenttime)==15 or getminute(currenttime)==45)then begin
+		DoBackupHANSAMn;
+	end;
+	
 	if(right(getminute(currenttime),1)=="5" or right(getminute(currenttime),1)=="0")then begin
 		GetPromItemsMnRun;
 	end;

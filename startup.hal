@@ -16,6 +16,8 @@ begin
   Maintenance("Загрузить цены Prom.ua",GetPromOrdersVClass,GetPromItemsMn,modSO);
   Maintenance("Пересчитать профит",GetPromOrdersVClass,RecalcIVProfitMn,modSL);
   Maintenance("Отправить бэкап на сервер",GetPromOrdersVClass,DoBackupMn,modSY);
+  Maintenance("Отправить бэкап HANSA.HDB на сервер",GetPromOrdersVClass,DoBackupHANSAMn,modSY);
+
 	
 	Report("Товары с Prom.ua",PromItemReportRClass,PromItemReportRn,0,modSO);
 	Report("Товары с Prom.ua",PromItemReportRClass,PromItemReportRn,0,modSL);
