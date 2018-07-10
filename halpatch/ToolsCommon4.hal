@@ -49,7 +49,7 @@ begin
 												matrowget(SHr,j,SHrw);
 												if(SHrw.ArtCode==IVrw.ArtCode)then begin
 													logtext(0,SHrw.ArtCode & " cost " & SHrw.FIFORowVal/SHrw.Ship);
-													IVrw.BasePrice = SHrw.FIFO;
+													IVrw.BasePrice = SHrw.FIFORowVal/SHrw.Ship;
 													matrowput(IVr,i,IVrw);
 													IVDchrsum(IVr,i);
 													IVDchsum(IVr,i);
