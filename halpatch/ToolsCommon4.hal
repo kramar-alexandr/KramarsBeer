@@ -40,7 +40,6 @@ begin
 							end else begin
 								if(IVr.OrderNr>-1)then begin
 									SHr.OrderNr = IVr.OrderNr;
-									logtext(0,SHr.OrderNr);
 									TrHs = true;
 									while(loopbackkey("OrderKey",SHr,1,TrHs))begin
 										testf = true;
@@ -68,7 +67,7 @@ begin
 														end;
 													end;
 													if(costsum>0)then begin
-														IVrw.BasePrice = costsum;
+														IVrw.BasePrice = costsum/SHrw.Ship;
 													end;
 													//logtext(0,SHrw.ArtCode & " cost " & SHrw.FIFORowVal/SHrw.Ship);
 													//IVrw.BasePrice = SHrw.FIFORowVal/SHrw.Ship;
@@ -202,7 +201,6 @@ begin
 						end else begin
 							if(IVr.OrderNr>-1)then begin
 								SHr.OrderNr = IVr.OrderNr;
-								logtext(0,SHr.OrderNr);
 								TrHs = true;
 								while(loopbackkey("OrderKey",SHr,1,TrHs))begin
 									testf = true;
