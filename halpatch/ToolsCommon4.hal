@@ -109,7 +109,9 @@ begin
 	boolean changed;
 	record SHVc SHr;
 	row SHVc SHrw;
-	boolean testf,TrHs,TrHs1;
+	boolean testf,TrHs,TrHs1,TrHs2;
+	record ItemHistVc IHr;
+	val costsum;
 	
 	
 	IVr.OrderNr = ordnr;
@@ -144,7 +146,25 @@ begin
 											For(j=0;j<shrwcnt;j=j+1) begin
 												matrowget(SHr,j,SHrw);
 												if(SHrw.ArtCode==IVrw.ArtCode)then begin
-													IVrw.BasePrice = SHrw.FIFO;
+													costsum = blankval;
+													resetloop(IHr);
+													IHr.FileName = "SHVc";
+													IHr.TransNr = SHr.SerNr;
+													IHr.Row = j;
+													TrHs2 = true;
+													while(loopkey("FNTransNr",IHr,3,TrHs2))begin
+														if(IHr.FileName!="SHVc")then begin TrHs2 = false; end;
+														if(IHr.TransNr!=SHr.SerNr)then begin TrHs2 = false; end;
+														if(IHr.Row!=j)then begin TrHs2 = false; end;
+														if(TrHs2)then begin
+															if(IHr.StockAffectf==1)then begin
+																costsum = costsum + IHr.TotCostPrice;
+															end;
+														end;
+													end;
+													if(costsum>0)then begin
+														IVrw.BasePrice = costsum/SHrw.Ship;
+													end;
 													matrowput(IVr,i,IVrw);
 													IVDchrsum(IVr,i);
 													IVDchsum(IVr,i);
@@ -181,7 +201,9 @@ begin
 	boolean changed;
 	record SHVc SHr;
 	row SHVc SHrw;
-	boolean testf,TrHs;
+	boolean testf,TrHs,TrHs2;
+	record ItemHistVc IHr;
+	val costsum;
 	
 	
 		changed = false;
@@ -211,7 +233,25 @@ begin
 										For(j=0;j<shrwcnt;j=j+1) begin
 	  									matrowget(SHr,j,SHrw);
 	  									if(SHrw.ArtCode==IVrw.ArtCode)then begin
-	  										IVrw.BasePrice = SHrw.FIFO;
+	  										costsum = blankval;
+												resetloop(IHr);
+												IHr.FileName = "SHVc";
+												IHr.TransNr = SHr.SerNr;
+												IHr.Row = j;
+												TrHs2 = true;
+												while(loopkey("FNTransNr",IHr,3,TrHs2))begin
+													if(IHr.FileName!="SHVc")then begin TrHs2 = false; end;
+													if(IHr.TransNr!=SHr.SerNr)then begin TrHs2 = false; end;
+													if(IHr.Row!=j)then begin TrHs2 = false; end;
+													if(TrHs2)then begin
+														if(IHr.StockAffectf==1)then begin
+															costsum = costsum + IHr.TotCostPrice;
+														end;
+													end;
+												end;
+												if(costsum>0)then begin
+													IVrw.BasePrice = costsum/SHrw.Ship;
+												end;
 	  										matrowput(IVr,i,IVrw);
 	  										IVDchrsum(IVr,i);
 												IVDchsum(IVr,i);
