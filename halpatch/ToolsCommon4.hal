@@ -48,6 +48,7 @@ begin
 											For(j=0;j<shrwcnt;j=j+1) begin
 												matrowget(SHr,j,SHrw);
 												if(SHrw.ArtCode==IVrw.ArtCode)then begin
+													logtext(0,SHrw.ArtCode & " cost " & SHrw.FIFO);
 													IVrw.BasePrice = SHrw.FIFO;
 													matrowput(IVr,i,IVrw);
 													IVDchrsum(IVr,i);
