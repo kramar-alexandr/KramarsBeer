@@ -56,20 +56,25 @@ begin
 													IHr.TransNr = SHr.SerNr;
 													IHr.Row = j;
 													TrHs2 = true;
+													Logtext(0,1);
 													while(loopkey("FNTransNr",IHr,3,TrHs2))begin
 														if(IHr.FileName!="SHVc")then begin TrHs2 = false; end;
 														if(IHr.TransNr!=SHr.SerNr)then begin TrHs2 = false; end;
-														if(IHr.Row=j)then begin TrHs2 = false; end;
-														
-														
-														if(IHr.StockAffectf==1)then begin
-															costsum = costsum + IHr.TotCostPrice;
+														if(IHr.Row!=j)then begin TrHs2 = false; end;
+														Logtext(0,2);
+														if(TrHs2)then begin
+															if(IHr.StockAffectf==1)then begin
+																costsum = costsum + IHr.TotCostPrice;
+															end;
 														end;
+														Logtext(0,3);
 													end;
+													Logtext(0,5);
 													if(costsum>0)then begin
+													Logtext(0,6);
 														IVrw.BasePrice = costsum;
 													end;
-													
+													Logtext(0,4);
 													//logtext(0,SHrw.ArtCode & " cost " & SHrw.FIFORowVal/SHrw.Ship);
 													//IVrw.BasePrice = SHrw.FIFORowVal/SHrw.Ship;
 													matrowput(IVr,i,IVrw);
