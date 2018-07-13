@@ -23,6 +23,8 @@ begin
 	Report("Товары с Prom.ua",PromItemReportRClass,PromItemReportRn,0,modSL);
 	Report("Оборот по товару",ItemTurnoverRClass,ItemTurnoverRn,0,modSL);
 	
+	Report("Скорость продажи товаров",SaleSpeedRClass,SaleSpeedRn,0,modSL);
+	
   SString(50000,"Укажите цену закупки");
   SString(50001,"Укажите себестоимость");
   SString(50002,"Укажите розничную цену");

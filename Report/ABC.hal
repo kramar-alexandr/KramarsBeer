@@ -1,0 +1,66 @@
+SetLangMode(LangRussian,"RUS",0);
+
+global procedure SaleSpeedRn(record RcVc RepSpec)
+begin
+	record INVc INr;
+	record ItemHistVc IHr;
+	array string 40 aartcode;
+	integer acnt,i;
+	record IVVc IVr;
+	row IVVc IVrw;
+	record ItemStatusVc ISr;
+	vector val vsum,vgp;
+	vector boolean vaf;
+	boolean TrHs;
+	
+	StartReportNoheaderJob("Скорость продажи товара");
+		
+		startformat(15);
+			outstring(0,0,"Период",false);
+			outstring(100,0,RepSpec.sStartDate & ":" & RepSpec.sEndDate,false);
+			
+		endformat;
+		
+		IHr.TransDate = RepSpec.sStartDate;
+		TrHs = true;
+		while(loopkey("TransDate",IHr,1,TrHs))begin
+			if(IHr.TransDate>RepSpec.sEndDate)then begin TrHs = false; end;
+			
+			if(IHr.FileName=="IVVc")then begin
+				if(vaf[IHr.ArtCode]==false)then begin
+					vaf[IHr.ArtCode] = true;
+					aartcode[acnt] = IHr.ArtCode;
+					acnt = acnt + 1;
+				end;
+				IVr.SerNr = IHr.TransNr;
+				if(readfirstmain(IVr,1,true))then begin
+					matrowget(IVr,IHr.Row,IVrw);
+					vsum[IVrw.ArtCode] = vsum[IVrw.ArtCode] + IVrw.Sum;
+					vgp[IVrw.ArtCode] = vgp[IVrw.ArtCode] + IVrw.rowGP;
+				end;				
+			end;
+		end;
+		
+		startformat(15);
+			outstring(0,0,"Код",false);
+			outstring(70,0,"Название",false);
+			outstring(400,0,"Сумма",false);
+			outstring(1,0,"Прибыль",true);
+		endformat;
+		
+		For(i=0;i<acnt;i=i+1) begin
+	  	INr.Code = aartcode[i];
+	  	if(readfirstmain(INr,1,true))then begin
+	  		startformat(15);
+	  			outstring(0,0,INr.Code,false);
+	  			outstring(70,0,INr.Name,false);
+	  			outstring(400,0,vsum[INr.Code],false);
+	  			outstring(1,0,vgp[INr.Code],true);
+	  		endformat;
+	  	end;
+		end; 
+		
+	endjob;
+	
+return;
+end;
