@@ -5,13 +5,17 @@ begin
 	record INVc INr;
 	record ItemHistVc IHr;
 	array string 40 aartcode;
-	integer acnt,i;
+	integer acnt,i,j,k;
 	record IVVc IVr;
 	row IVVc IVrw;
 	record ItemStatusVc ISr;
 	vector val vsum,vgp;
 	vector boolean vaf;
 	boolean TrHs;
+	record RecVc Recr;
+	row RecVc Recrw;
+	string 255 outcode;
+	val rectotval
 	
 	StartReportNoheaderJob("Скорость продажи товара");
 		
@@ -35,6 +39,25 @@ begin
 				IVr.SerNr = IHr.TransNr;
 				if(readfirstmain(IVr,1,true))then begin
 					matrowget(IVr,IHr.Row,IVrw);
+					
+					INr.Code = IVrw.ArtCode
+					readfirstmain(INr,1,true);
+					Recr.Code = INr.Recepy;
+					if (ReadFirstMain(Recr,1,true)) then begin
+						k=0;
+						rectotval = 0;
+						for(j=0;j<matrowcnt(Recr);j=j+1)begin
+							matrowget(Recr,j,Recrw);
+							if(Recrw.InQty>0)then begin
+								k=k+1;
+								outcode = Recrw.Item;
+							end;
+						end;
+					end;
+					if(k==1)then begin
+						IVrw.ArtCode = outcode;
+					end;
+					
 					vsum[IVrw.ArtCode] = vsum[IVrw.ArtCode] + IVrw.Sum;
 					vgp[IVrw.ArtCode] = vgp[IVrw.ArtCode] + IVrw.rowGP;
 				end;				
