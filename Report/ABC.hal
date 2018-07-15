@@ -15,7 +15,7 @@ begin
 	record RecVc Recr;
 	row RecVc Recrw;
 	string 255 outcode;
-	val rectotval
+	val rectotval;
 	
 	StartReportNoheaderJob("Скорость продажи товара");
 		
