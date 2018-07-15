@@ -38,28 +38,6 @@ begin
 				IVr.SerNr = IHr.TransNr;
 				if(readfirstmain(IVr,1,true))then begin
 					matrowget(IVr,IHr.Row,IVrw);
-					
-					INr.Code = IVrw.ArtCode
-					readfirstmain(INr,1,true);
-					
-					k = 0;
-					if(nonblank(INr.Recepy))then begin
-						Recr.Code = INr.Recepy;
-						if (ReadFirstMain(Recr,1,true)) then begin
-							recrvcnt = matrowcnt(Recr);
-							for(j=0;j<recrvcnt;j=j+1)begin
-								matrowget(Recr,j,Recrw);
-								if(Recrw.InQty>0)then begin
-									k=k+1;
-									outcode = Recrw.Item;
-								end;
-							end;
-						end;
-					end;
-					if(k==1)then begin
-						IVrw.ArtCode = outcode;
-					end;
-					
 					vsum[IVrw.ArtCode] = vsum[IVrw.ArtCode] + IVrw.Sum;
 					vgp[IVrw.ArtCode] = vgp[IVrw.ArtCode] + IVrw.rowGP;
 				end;				
@@ -72,6 +50,43 @@ begin
 			outstring(400,0,"Сумма",false);
 			outstring(1,0,"Прибыль",true);
 		endformat;
+		
+		For(i=0;i<acnt;i=i+1) begin
+	  	INr.Code = aartcode[i];
+	  	if(readfirstmain(INr,1,true))then begin
+	  		
+	  		k = 0;
+				if(nonblank(INr.Recepy))then begin
+					Recr.Code = INr.Recepy;
+					if (ReadFirstMain(Recr,1,true)) then begin
+						recrvcnt = matrowcnt(Recr);
+						for(j=0;j<recrvcnt;j=j+1)begin
+							matrowget(Recr,j,Recrw);
+							if(Recrw.InQty>0)then begin
+								k=k+1;
+								outcode = Recrw.Item;
+							end;
+						end;
+					end;
+				end;
+				if(k==1)then begin
+					if(vaf[outcode]==false)then begin
+						vaf[outcode] = true;
+						aartcode[acnt] = outcode;
+						acnt = acnt + 1;
+					end;
+					
+					vsum[outcode] = vsum[outcode] + vsum[INr.Code];
+					vgp[outcode] = vgp[outcode] + vgp[INr.Code];
+					
+					vsum[INr.Code] = blankval;
+					vgp[INr.Code] = blankval;
+				end;
+	  		
+	  		
+	  	end;
+		end; 
+		
 		
 		For(i=0;i<acnt;i=i+1) begin
 	  	INr.Code = aartcode[i];
