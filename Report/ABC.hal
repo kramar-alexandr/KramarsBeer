@@ -42,15 +42,18 @@ begin
 					
 					INr.Code = IVrw.ArtCode
 					readfirstmain(INr,1,true);
-					Recr.Code = INr.Recepy;
-					if (ReadFirstMain(Recr,1,true)) then begin
-						k=0;
-						rectotval = 0;
-						for(j=0;j<matrowcnt(Recr);j=j+1)begin
-							matrowget(Recr,j,Recrw);
-							if(Recrw.InQty>0)then begin
-								k=k+1;
-								outcode = Recrw.Item;
+					
+					k = 0;
+					if(nonblank(INr.Recepy))then begin
+						Recr.Code = INr.Recepy;
+						if (ReadFirstMain(Recr,1,true)) then begin
+							recrvcnt = matrowcnt(Recr);
+							for(j=0;j<recrvcnt;j=j+1)begin
+								matrowget(Recr,j,Recrw);
+								if(Recrw.InQty>0)then begin
+									k=k+1;
+									outcode = Recrw.Item;
+								end;
 							end;
 						end;
 					end;
