@@ -5,7 +5,7 @@ begin
 	record INVc INr;
 	record ItemHistVc IHr;
 	array string 40 aartcode;
-	integer acnt,i,j,k;
+	integer acnt,i,j,k,recrvcnt;
 	record IVVc IVr;
 	row IVVc IVrw;
 	record ItemStatusVc ISr;
@@ -15,7 +15,6 @@ begin
 	record RecVc Recr;
 	row RecVc Recrw;
 	string 255 outcode;
-	val rectotval;
 	
 	StartReportNoheaderJob("Скорость продажи товара");
 		
