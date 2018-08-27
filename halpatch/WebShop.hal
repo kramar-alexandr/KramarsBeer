@@ -92,7 +92,7 @@ val orsum;
 					
 					foundrec = false;
 					ORr.CustOrdNr = XmlGetAttribute(repxml,"orders/order[" & ordi & "]","id");
-					logtext(0,"Order # " & XmlGetAttribute(repxml,"orders/order[" & ordi & "]","id"));
+		
 					state = XmlGetAttribute(repxml,"orders/order[" & ordi & "]","state");
 					if(ReadFirstKey("CustOrdNr",ORr,1,true))then begin
 						foundrec = true;
@@ -119,6 +119,7 @@ val orsum;
 						end;
 						
 						if(!foundrec)then begin
+							logtext(0,"Order # " & XmlGetAttribute(repxml,"orders/order[" & ordi & "]","id"));
 							if(saveflag)then begin
 								ORr.CustCode = CUr.Code;
 								ORr.OrdDate = stringtodate(left(XmlGet(repxml,"orders/order[" & ordi & "]/date"),8));
