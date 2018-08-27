@@ -92,6 +92,7 @@ val orsum;
 					
 					foundrec = false;
 					ORr.CustOrdNr = XmlGetAttribute(repxml,"orders/order[" & ordi & "]","id");
+					logtext(0,"Order # " & XmlGetAttribute(repxml,"orders/order[" & ordi & "]","id"));
 					state = XmlGetAttribute(repxml,"orders/order[" & ordi & "]","state");
 					if(ReadFirstKey("CustOrdNr",ORr,1,true))then begin
 						foundrec = true;
