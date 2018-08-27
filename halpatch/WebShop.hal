@@ -97,9 +97,8 @@ val orsum;
 					if(ReadFirstKey("CustOrdNr",ORr,1,true))then begin
 						foundrec = true;
 					end;
-					
+					//logtext(0,"Order # " & XmlGetAttribute(repxml,"orders/order[" & ordi & "]","id") & " foundf " & foundf);
 					if(foundf)then begin
-						logtext(0,"Order # " & XmlGetAttribute(repxml,"orders/order[" & ordi & "]","id") & " foundf " & foundf);
 						if(foundrec==false)then begin
 							recordnew(ORr);
 							
