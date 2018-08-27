@@ -16,10 +16,13 @@ record ORVc ORr;
 row ORVc ORRw;
 val orsum;
 	
+	
 	setcompany(2,false);
 	blockload(PUAb);
 	webgetpostdata(reply);
 	
+	
+	logtext(0,"WebGetPromOrdersCallBack " & getarealength(reply));
 	if(getarealength(reply)>0)then begin
 		logtext(0,PUAb.Path);
 		logtext(0,getarealength(reply));
