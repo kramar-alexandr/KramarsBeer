@@ -567,7 +567,7 @@ val orsum;
 	blockload(PUAb);
 
 	AddTextToArea("{\"host\" : \"" & "cs2683390.prom.ua" & "\"," & chr(13),a_req);
-	AddTextToArea("\"port\" : " & 80 & "," & chr(13),a_req);
+	AddTextToArea("\"port\" : " & 443 & "," & chr(13),a_req);
 	AddTextToArea("\"https\" : true," & chr(13),a_req);
 	AddTextToArea("\"method\" : \"GET\"," & chr(13),a_req);
 	AddTextToArea("\"page\" : \"" & "/yandex_market.xml?hash_tag=6a8e540fc43bb57f6f41c4801affb8fa&sales_notes=&product_ids=&group_ids=&label_ids=&exclude_fields=&html_description=0&yandex_cpa=&process_presence_sure=" & "\"," & chr(13),a_req);
