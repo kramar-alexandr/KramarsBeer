@@ -326,7 +326,7 @@ begin
 		end;
 	end;
 	webgetpostdata(reply);
-	logtext(0,"WebGetPromItemsMnCallBack");
+	logtext(0,"WebGetPromItemsMnCallBack " & getarealength(reply));
 	writeareatofile(reply,"PromItems.txt",0);
 	if(getarealength(reply)>1000)then begin
 		eandarea = GetStringFromArea(reply,getarealength(reply)-15,14);
