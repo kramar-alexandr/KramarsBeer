@@ -13,7 +13,7 @@ begin
   Maintenance("Удалить все записи",CustomRegisterRemoveVClass,CustomRegisterRemoveMn,modDBMain);
   
   Maintenance("Загрузить заказы Prom.ua",GetPromOrdersVClass,GetPromOrdersMn,modSO);
-  Maintenance("Загрузить цены Prom.ua",GetPromOrdersVClass,GetPromItemsMn,modSO);
+  Maintenance("Загрузить цены Prom.ua",GetPromOrdersVClass,GetPromItemsMnRun,modSO);
   Maintenance("Пересчитать профит",GetPromOrdersVClass,RecalcIVProfitMn,modSL);
   Maintenance("Отправить бэкап на сервер",GetPromOrdersVClass,DoBackupMn,modSY);
   Maintenance("Отправить бэкап HANSA.HDB на сервер",GetPromOrdersVClass,DoBackupHANSAMn,modSY);
