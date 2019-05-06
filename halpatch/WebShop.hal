@@ -560,7 +560,10 @@ boolean foundf,foundrec,saveflag;
 record ORVc ORr;
 row ORVc ORRw;
 val orsum;
-
+	
+	logtext(0,"GetPromItemsMnRun");
+	
+	
 	blockload(PUAb);
 
 	AddTextToArea("{\"host\" : \"" & "brewcraft.com.ua" & "\"," & chr(13),a_req);
