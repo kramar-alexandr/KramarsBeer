@@ -789,7 +789,7 @@ date orddate;
 							ORr.CustCode = CUr.Code;
 							ORr.OrdDate = stringtodate(left(JSONGet(jorders,"orders/[" & i & "]/date_added"),10));
 							
-							orddate.day = stringtoint(right(JSONGet(jorders,"orders/[" & i & "]/date_added"),2));
+							orddate.day = stringtoint(mid(JSONGet(jorders,"orders/[" & i & "]/date_added"),8,2));
 							orddate.year = stringtoint(left(JSONGet(jorders,"orders/[" & i & "]/date_added"),4));
 							orddate.month = stringtoint(mid(JSONGet(jorders,"orders/[" & i & "]/date_added"),4,2));
 							ORr.OrdDate = orddate;
