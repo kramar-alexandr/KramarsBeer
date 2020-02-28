@@ -1,7 +1,38 @@
 external function Boolean GetNextCustNr(var string);
 external function Boolean ORVc_PasteArtCode(var record ORVc,Integer,var string,var string,Boolean);
+external function LongInt POSNETHexToLong(string);
 
 SetLangMode(LangRussian,"RUS",0);
+
+global
+function string 255 ChekUnicode(string str)
+begin
+  string 10 c, c1;
+  string 10 ucode;
+  string 255 res,tmp; 
+  integer slen,i,int;
+  longint lmes;
+  
+  res = str;
+  i=0;
+  slen = Len(res);
+	
+	if(slen>0)then begin
+		for(i=0;i<slen;i=i+1)begin
+			c = mid(res,i,2);
+			if(c==(chr(92) & "u"))then begin
+				ucode = mid(res,i,6);
+				lmes = POSNETHexToLong(ucode);
+				int = lmes;
+				res = left(res,i) & uchr(int) & right(res, (len(res)-(i+6)));
+				slen = Len(res);
+			end;
+		end;
+	end;
+		
+  ChekUnicode = res;
+  return;
+end;
 
 global webpublic updating procedure WebGetPromOrdersCallBack()
 begin
@@ -625,6 +656,181 @@ json jlogin;
 			blockstore(OCSb);
 		end;
 		
+	end;
+
+return;
+end;
+
+
+global updating procedure ocStoreGetOrdersMn()
+begin
+record PromUaBlock PUAb;
+area req,reply,a_req;
+xml repxml;
+integer orcnt,i,errorcnt,rwcnt,ordi,itemi,itemcnt;
+record CUVc CUr,lCUr;
+string 250 customer,phone,email,eandarea,tstr,addr0,addr1,addr2,addr3,state,inwarning,warning,token;
+boolean foundf,foundrec,saveflag;
+record ORVc ORr;
+row ORVc ORRw;
+val orsum;
+record OCStoreBlock OCSb;
+json jorders;
+string 255 order_id;
+	
+	logtext(0,"ocStoreGetOrders");
+	
+	
+	blockload(OCSb);
+
+	
+	AddTextToArea("date=" & datetostring(addday(currentdate,-5),"YYYY-MM-DD"),a_req);
+
+	if(SendWebRequest(OCSb.Host,80,80,false,"POST",OCSb.Path & "api/getorders&" & "api_token=" & OCSb.token,"application/x-www-form-urlencoded","",false,a_req,reply,20))then begin
+	end;
+	addtexttoarea("|" & currentdate & "|" & currenttime & "|" & chr(13) & chr(10),a_req);
+	writeareatofile(a_req,"ocStoreRequest.txt",1);
+	addtexttoarea("|" & currentdate & "|" & currenttime & "|" & chr(13) & chr(10),reply);
+	writeareatofile(reply,"ocStoreReply.txt",1);
+	
+	
+	if(getarealength(reply)>0)then begin
+		jorders = parsejsonarea(reply);
+		for(i=0;i<JSONCountChildren(jorders,"orders");i=i+1)begin
+			logtext(0,"order_id = " & JSONGet(jorders,"orders/[" & i & "]/order_id"));
+			order_id = JSONGet(jorders,"orders/[" & i & "]/order_id");
+			if(nonblank(order_id))then begin
+				
+				customer = "";
+				phone = "";
+				email = "";
+				addr0 = "";
+				addr1 = "";
+				addr2 = "";
+				
+				customer = ChekUnicode(JSONGet(jorders,"orders/[" & i & "]/lastname")) & " " &  ChekUnicode(JSONGet(jorders,"orders/[" & i & "]/firstname"));
+				phone = JSONGet(jorders,"orders/[" & i & "]/telephone");
+				email = JSONGet(jorders,"orders/[" & i & "]/email");
+				addr0 = ChekUnicode(JSONGet(jorders,"orders/[" & i & "]/payment_city") & " " & JSONGet(jorders,"orders/[" & i & "]/payment_address_1"));
+				addr1 = ChekUnicode(JSONGet(jorders,"orders/[" & i & "]/shipping_method"));
+				addr2 = ChekUnicode(JSONGet(jorders,"orders/[" & i & "]/payment_method"));
+				
+				foundf = false;
+				if(nonblank(phone))then begin
+					CUr.Phone = phone;
+					if(Readfirstkey("Phone",CUr,1,true))then begin
+						foundf = true;
+					end;
+				end;
+				if(foundf==false)then begin
+					if(nonblank(email))then begin
+						CUr.eMail = email;
+						if(Readfirstkey("eMail",CUr,1,true))then begin
+							foundf = true;
+						end;
+					end;
+				end;
+				if(foundf==false)then begin
+					recordnew(CUr);
+					if (GetNextCustNr(tstr)) then begin end;
+					CUr.Code = tstr;
+					lCUr.Code = CUr.Code;
+					if (!ReadFirstMain(lCUr,1,true)) then begin
+						CUr.Name = customer;
+						CUr.Phone = phone;
+						CUr.eMail = email;
+						CUr.CustCat = "NONAM";
+						CUr.CUType = 1;
+						CUr.PayDeal = "O";
+						CUr.InvAddr0 = addr0;
+						CUr.InvAddr1 = addr1;
+						CUr.InvAddr2 = addr2;
+						logtext(0,"Customer Store " & CUr.Code);
+						recordstore(CUr,false);
+						foundf = true;
+					end;
+				end;
+				
+				
+				foundrec = false;
+				ORr.CustOrdNr = "OC_" & order_id;
+	
+				state = JSONGet(jorders,"orders/[" & i & "]/status");
+				if(ReadFirstKey("CustOrdNr",ORr,1,true))then begin
+					foundrec = true;
+				end;
+				
+				
+				if(foundf)then begin
+					if(foundrec==false)then begin
+						recordnew(ORr);
+						
+						ORr.SerNr = NextSerNr("ORVc",CurrentDate,-1,false,"");
+						ORr.CustOrdNr ="OC_" & order_id;
+					end;
+					orsum = blankval;
+					ORr.Comment = state;
+					
+					saveflag = true;
+					ORr.Closed = 0;
+					switch(state)begin
+						case "new":	ORr.Comment = "Новый";
+						case "accepted":	ORr.Comment = "Принятый";
+						case "declined":	ORr.Comment = "Отмененный";ORr.Closed = 1;saveflag = false;
+						case "draft":	ORr.Comment = "Черновик";saveflag = false;
+						case "closed":	ORr.Comment = "Выполнен";ORr.OKFlag = 1;
+					end;
+					
+					if(!foundrec)then begin
+						
+						if(saveflag)then begin
+							ORr.CustCode = CUr.Code;
+							ORr.OrdDate = stringtodate(left(JSONGet(jorders,"orders/[" & i & "]/date_added"),10));
+							ORr.Addr0 = CUr.Name;
+							ORr.Addr1 = addr0;
+							ORr.Addr2 = addr1;
+							ORr.Addr3 = addr2;
+							ORr.ShipAddr0 = CUr.Name;
+							ORr.ShipAddr1 = addr0;
+							ORr.ShipAddr2 = addr1;
+							ORr.ShipAddr3 = addr2;
+							ORr.DelAddr3 = phone;
+							ORr.DelAddr4 = email;
+							ORr.CurncyCode = "UAH";
+							ORr.PayDeal = "5";
+					
+							itemcnt = 0;
+							if(foundrec==false)then begin
+								itemcnt = JSONCountChildren(jorders,"orders/[" & i & "]/items");
+								For(itemi=0;itemi<itemcnt;itemi=itemi+1) begin
+									ORrw.ArtCode = JSONGet(jorders,"orders/[" & i & "]/items/[" & itemi & "]/model");
+									matrowput(ORr,itemi,ORRw);
+									ORVc_PasteArtCode(ORr,itemi,inwarning,warning,false);
+									matrowget(ORr,itemi,ORRw);
+									if(blank(ORrw.ArtCode))then begin
+										ORrw.ArtCode = JSONGet(jorders,"orders/[" & i & "]/items/[" & itemi & "]/product_id");
+									end;
+									ORrw.Spec = ChekUnicode(JSONGet(jorders,"orders/[" & i & "]/items/[" & itemi & "]/name"));
+									ORrw.Quant = stringtoval(JSONGet(jorders,"orders/[" & i & "]/items/[" & itemi & "]/quantity"),M4Val);
+									ORrw.Price = stringtoval(JSONGet(jorders,"orders/[" & i & "]/items/[" & itemi & "]/price"),M4Val);
+									ORrw.VATCode = "0%O";
+									ORrw.Sum = ORrw.Quant*ORrw.Price;
+									orsum = orsum + ORrw.Sum;
+									matrowput(ORr,itemi,ORRw);
+								end; 
+								ORr.Sum4 = orsum;
+							end;
+							recordstore(ORr,true);
+						end;
+					end else begin
+						if(saveflag)then begin
+							recordstore(ORr,true);
+						end;
+					end;
+				end;
+				
+			end;
+		end;
 	end;
 
 return;

@@ -13,6 +13,7 @@ begin
   Import("Импортировать товары",INImportFromFMFormatIClass,INImportFromFMFormatIn,modIN);
   Maintenance("Удалить все записи",CustomRegisterRemoveVClass,CustomRegisterRemoveMn,modDBMain);
   
+  Maintenance("Загрузить заказы ocStore",GetPromOrdersVClass,ocStoreGetOrdersMn,modSO);
   Maintenance("Загрузить заказы Prom.ua",GetPromOrdersVClass,GetPromOrdersMn,modSO);
   Maintenance("Загрузить цены Prom.ua",GetPromOrdersVClass,GetPromItemsMnRun,modSO);
   Maintenance("Пересчитать профит",GetPromOrdersVClass,RecalcIVProfitMn,modSL);
