@@ -791,7 +791,7 @@ date orddate;
 							
 							orddate.day = stringtoint(mid(JSONGet(jorders,"orders/[" & i & "]/date_added"),8,2));
 							orddate.year = stringtoint(left(JSONGet(jorders,"orders/[" & i & "]/date_added"),4));
-							orddate.month = stringtoint(mid(JSONGet(jorders,"orders/[" & i & "]/date_added"),4,2));
+							orddate.month = stringtoint(mid(JSONGet(jorders,"orders/[" & i & "]/date_added"),5,2));
 							ORr.OrdDate = orddate;
 							ORr.Addr0 = CUr.Name;
 							ORr.Addr1 = addr0;
