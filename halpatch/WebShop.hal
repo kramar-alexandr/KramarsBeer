@@ -757,7 +757,7 @@ date orddate;
 				foundrec = false;
 				ORr.CustOrdNr = "OC_" & order_id;
 	
-				state = JSONGet(jorders,"orders/[" & i & "]/status");
+				state = ChekUnicode(JSONGet(jorders,"orders/[" & i & "]/status"));
 				if(ReadFirstKey("CustOrdNr",ORr,1,true))then begin
 					foundrec = true;
 				end;
