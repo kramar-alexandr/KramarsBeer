@@ -677,6 +677,7 @@ val orsum;
 record OCStoreBlock OCSb;
 json jorders;
 string 255 order_id;
+date orddate;
 	
 	logtext(0,"ocStoreGetOrders");
 	
@@ -787,6 +788,11 @@ string 255 order_id;
 						if(saveflag)then begin
 							ORr.CustCode = CUr.Code;
 							ORr.OrdDate = stringtodate(left(JSONGet(jorders,"orders/[" & i & "]/date_added"),10));
+							
+							orddate.day = stringtoint(right(JSONGet(jorders,"orders/[" & i & "]/date_added"),2));
+							orddate.year = stringtoint(left(JSONGet(jorders,"orders/[" & i & "]/date_added"),4));
+							orddate.month = stringtoint(mid(JSONGet(jorders,"orders/[" & i & "]/date_added"),4,2));
+							ORr.OrdDate = orddate;
 							ORr.Addr0 = CUr.Name;
 							ORr.Addr1 = addr0;
 							ORr.Addr2 = addr1;
