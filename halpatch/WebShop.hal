@@ -584,6 +584,52 @@ val orsum;
 return;
 end;
 
+global updating procedure RA_ocStoreGetTokenDsm()
+begin
+record PromUaBlock PUAb;
+area req,reply,a_req;
+xml repxml;
+integer orcnt,i,errorcnt,rwcnt,ordi,itemi,itemcnt;
+record CUVc CUr,lCUr;
+string 250 customer,phone,email,eandarea,tstr,addr0,addr1,addr2,addr3,state,inwarning,warning,token;
+boolean foundf,foundrec,saveflag;
+record ORVc ORr;
+row ORVc ORRw;
+val orsum;
+record OCStoreBlock OCSb;
+json jlogin;
+	
+	logtext(0,"RA_ocStoreGetTokenDsm");
+	
+	
+	blockload(OCSb);
+
+	
+	AddTextToArea("username=" & OCSb.Login  & "&key=" & OCSb.ApiKey,a_req);
+
+	if(SendWebRequest(OCSb.Host,80,80,false,"POST",OCSb.Path & "api/login","application/x-www-form-urlencoded","",false,a_req,reply,20))then begin
+	end;
+	addtexttoarea("|" & currentdate & "|" & currenttime & "|" & chr(13) & chr(10),a_req);
+	writeareatofile(a_req,"ocStoreRequest.txt",1);
+	addtexttoarea("|" & currentdate & "|" & currenttime & "|" & chr(13) & chr(10),reply);
+	writeareatofile(reply,"ocStoreReply.txt",1);
+	
+	
+	if(getarealength(reply)>0)then begin
+		jlogin = parsejsonarea(reply);
+		
+		token = JSONGet(jlogin,"api_token");
+		logtext(0,"token " & token);
+		if(nonblank(token))then begin
+			OCSb.token = token;
+			blockstore(OCSb);
+		end;
+		
+	end;
+
+return;
+end;
+
 global updating procedure GetPromItemsMn()
 begin
 	

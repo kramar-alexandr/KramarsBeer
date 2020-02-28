@@ -1,3 +1,5 @@
+remote inner updating procedure RA_ocStoreGetTokenDsm();
+
 global
 updating function Boolean OnLogin()
 begin
@@ -13,5 +15,22 @@ boolean res;
 	end;
 	
 	OnLogin = res;
+return;
+end;
+
+global
+updating procedure ocStoreGetTokenDsm()
+begin
+	record OCStoreBlock OCSb;
+	integer wn;
+	
+	
+	logtext(0,"ocStoreGetTokenDsm");
+	RA_ocStoreGetTokenDsm;
+	blockload(OCSb);
+	wn = curwindow;
+	
+	putwindowrecord(wn,OCSb);
+
 return;
 end;

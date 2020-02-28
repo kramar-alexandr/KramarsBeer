@@ -44,6 +44,14 @@ begin
 		RecordField(LastCost,M4Val,0,0); 
 		RecordField(PromExist,M4Int,0,0); 
 	EndRecordAdd;
+	
+	BlockBegin(OCStoreBlock,-,"");
+		RecordField(Login,M4Str,255,0);
+		RecordField(ApiKey,M4Str,256,0);
+		RecordField(token,M4Str,255,0);
+		RecordField(Host,M4Str,255,0);
+		RecordField(Path,M4Str,255,0);
+	EndBlock;
 
 
 return;

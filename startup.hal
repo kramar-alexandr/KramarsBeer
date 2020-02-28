@@ -8,6 +8,7 @@ begin
   Setting("Печать на фискальном принтере",FiscalPrintingTClass,modPOS);
   Setting("Локальные настройки фискального принтера",FiscalSetLocalTClass,modPOS);
   Setting("Настройки Prom.ua",PromUaTClass,modSO);
+  Setting("Настройки ocStore",OCStoreTClass,modSO);
   
   Import("Импортировать товары",INImportFromFMFormatIClass,INImportFromFMFormatIn,modIN);
   Maintenance("Удалить все записи",CustomRegisterRemoveVClass,CustomRegisterRemoveMn,modDBMain);
