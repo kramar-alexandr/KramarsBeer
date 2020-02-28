@@ -686,7 +686,7 @@ date orddate;
 	blockload(OCSb);
 
 	
-	AddTextToArea("date=" & datetostring(addday(currentdate,-5),"YYYY-MM-DD"),a_req);
+	AddTextToArea("date=" & datetostring(addday(currentdate,0),"YYYY-MM-DD"),a_req);
 
 	if(SendWebRequest(OCSb.Host,80,80,false,"POST",OCSb.Path & "api/getorders&" & "api_token=" & OCSb.token,"application/x-www-form-urlencoded","",false,a_req,reply,20))then begin
 	end;
