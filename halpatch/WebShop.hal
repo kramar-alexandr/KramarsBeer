@@ -680,6 +680,7 @@ string 255 order_id;
 	
 	logtext(0,"ocStoreGetOrders");
 	
+	setcompany(2,false);
 	
 	blockload(OCSb);
 
@@ -832,7 +833,9 @@ string 255 order_id;
 			end;
 		end;
 	end;
-
+	
+	setcompany(1,false);
+	
 return;
 end;
 
