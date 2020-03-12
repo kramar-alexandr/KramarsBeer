@@ -860,5 +860,9 @@ begin
 		GetPromItemsMnRun;
 	end;
 	
+	if(right(getminute(currenttime),1)=="5" or right(getminute(currenttime),1)=="0")then begin
+		ocStoreGetOrdersMn;
+	end;
+	
 return;
 end;
