@@ -861,7 +861,7 @@ begin
 	end;
 	
 	if(right(getminute(currenttime),1)=="5" or right(getminute(currenttime),1)=="0")then begin
-		//RA_ocStoreGetTokenDsm;
+		RA_ocStoreGetTokenDsm;
 		ocStoreGetOrdersMn;
 	end;
 	
