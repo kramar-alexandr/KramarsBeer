@@ -630,6 +630,7 @@ val orsum;
 record OCStoreBlock OCSb;
 json jlogin;
 	
+	setcompany(2,false);
 	logtext(0,"RA_ocStoreGetTokenDsm");
 	
 	
